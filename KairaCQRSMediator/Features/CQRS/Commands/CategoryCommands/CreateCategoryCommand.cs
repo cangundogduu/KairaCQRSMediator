@@ -3,8 +3,8 @@
     public class CreateCategoryCommand
     {
         
-        public string CategoryName { get; set; }
-        public string ImageUrl { get; set; }
+        public string? CategoryName { get; set; }
+        public string? ImageUrl { get; set; }
 
     }
 }

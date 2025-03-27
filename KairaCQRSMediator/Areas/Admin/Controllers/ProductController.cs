@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace KairaCQRSMediator.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    public class ProductController(IMediator _mediator,GetCategoryQueryHandler _getCategoryQueryHandler) : Controller
+    public class ProductController(IMediator _mediator, GetCategoryQueryHandler _getCategoryQueryHandler) : Controller
     {
         public async Task<IActionResult> Index()
         {
@@ -19,7 +19,7 @@ namespace KairaCQRSMediator.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateProduct()
         {
-            var categories= await _getCategoryQueryHandler.Handle();
+            var categories = await _getCategoryQueryHandler.Handle();
 
             ViewBag.Categories = (from x in categories
                                   select new SelectListItem
@@ -33,6 +33,23 @@ namespace KairaCQRSMediator.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductCommand command)
         {
+            var categories = await _getCategoryQueryHandler.Handle();
+
+            ViewBag.Categories = (from x in categories
+                                  select new SelectListItem
+                                  {
+                                      Text = x.CategoryName,
+                                      Value = x.CategoryId.ToString()
+                                  }).ToList();
+
+
+            if (!ModelState.IsValid)
+            {
+
+                return View(command);
+
+            }
+
             await _mediator.Send(command);
             return RedirectToAction("Index");
         }
@@ -53,11 +70,29 @@ namespace KairaCQRSMediator.Areas.Admin.Controllers
             return View(product);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> UpdateProduct(UpdateProductCommand command)
-        //{
-        //    await _mediator.Send(command);
-        //    return RedirectToAction("Index");
-        //}
+        [HttpPost]
+        public async Task<IActionResult> UpdateProduct(UpdateProductCommand command)
+        {
+            var categories = await _getCategoryQueryHandler.Handle();
+            ViewBag.Categories = (from x in categories
+                                  select new SelectListItem
+                                  {
+                                      Text = x.CategoryName,
+                                      Value = x.CategoryId.ToString()
+                                  }).ToList();
+
+            if (!ModelState.IsValid)
+            {
+                return View(command);
+            }
+            await _mediator.Send(command);
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> RemoveProduct(int id)
+        {
+            await _mediator.Send(new RemoveProductCommand(id));
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
